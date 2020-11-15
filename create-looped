@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+INPUT="$1"
+AUDIO="$2"
+OUTPUT="$3"
+
+if [ $# -ne 3 ]
+then
+    echo "Usage:"
+    echo "$0 {input-video} {input-audio} {out-looped-video}"
+    exit
+fi
+
+ffmpeg -stream_loop -1 \
+	-i $INPUT -i $AUDIO \
+	-shortest -map 0:v:0 -map 1:a:0 -y \
+	$OUTPUT
