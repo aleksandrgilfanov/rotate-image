@@ -1,0 +1,22 @@
+#!/bin/sh -e
+
+IMAGE="$1"
+AUDIO="$2"
+OUTPUT="$3"
+
+
+if [ $# -ne 3 ]
+then
+    echo "Usage:"
+    echo "$0 {input-image} {input-audio} {out-looped-video}"
+    exit
+fi
+
+TMPDIR=`mktemp -d`
+TMPVID="$TMPDIR/tmp.mp4"
+
+./rotate-image $IMAGE $TMPDIR
+./create-video $TMPDIR $TMPVID
+./create-looped $TMPVID $AUDIO $OUTPUT
+
+rm -rf $TMPDIR
