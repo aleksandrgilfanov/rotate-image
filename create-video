@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+IMAGES_DIR="$1"
+OUT="$2"
+
+if [ $# -ne 2 ]
+then
+	echo "Usage:"
+	echo "$0 {images-dir} {out-video-filename}"
+	exit
+fi
+
+ffmpeg -framerate 30 -i $IMAGES_DIR/%03d.png \
+	-c:v libx264 -r 30 -pix_fmt yuv420p \
+	-loop 4 -y \
+	$OUT
