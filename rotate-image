@@ -1,0 +1,29 @@
+#!/usr/bin/python
+
+import argparse
+import errno
+import os
+import sys
+
+# pip install --user pillow
+from PIL import Image
+
+parser = argparse.ArgumentParser()
+parser.add_argument("srcimg", help="source image to rotate")
+parser.add_argument("outdir", help="output directory to save rotated images")
+args = parser.parse_args()
+
+src = Image.open(args.srcimg)
+out = args.outdir
+
+if not os.path.exists(out):
+	os.mkdir(out)
+elif not os.path.isdir(out):
+	raise Exception(out + " is exist, but it is not a directory")
+
+for i in range(360):
+	rotated = src.rotate(-i)
+	name = "{:03d}".format(i)
+	fullpath = out + "/" + name + ".png"
+	rotated.save(fullpath)
+	print(fullpath + " created")
