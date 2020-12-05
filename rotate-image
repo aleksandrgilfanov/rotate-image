@@ -21,7 +21,8 @@ def save_rotated_image(degree):
 		bg = Image.open(args.bgimg)
 
 		# get alpha mask from source image
-		alpha = src.getchannel('A')
+		# pillow < 4.3.0 does not have getchannel('A'), so
+		alpha = src.split()[-1]
 
 		composite = Image.composite(rotated, bg, alpha)
 		composite.save(fullpath)
