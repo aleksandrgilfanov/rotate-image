@@ -4,6 +4,8 @@ import argparse
 import errno
 import os
 import sys
+from Queue import Queue
+from threading import Thread
 
 # pip install --user pillow
 from PIL import Image
@@ -28,6 +30,19 @@ def save_rotated_image(degree):
 
 	print(fullpath + " created")
 
+class Worker(Thread):
+	def __init__(self, queue):
+		Thread.__init__(self)
+		self.queue = queue
+
+	def run(self):
+		while True:
+			degree = self.queue.get()
+			try:
+				save_rotated_image(degree)
+			finally:
+				self.queue.task_done()
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--bgimg", help="background image")
 parser.add_argument("srcimg", help="source image to rotate")
@@ -41,5 +56,13 @@ if not os.path.exists(out):
 elif not os.path.isdir(out):
 	raise Exception(out + " is exist, but it is not a directory")
 
-for degree in range(360):
-	save_rotated_image(degree)
+queue = Queue()
+for x in range(8):
+	worker = Worker(queue)
+	worker.daemon = True
+	worker.start()
+
+for i in range(360):
+	queue.put(i)
+
+queue.join()
