@@ -6,7 +6,7 @@ brew install ffmpeg
 pip install --user pillow
 ```
 
-Usage example:
+Create rotating circle video from png with alpha layer and mp3:
 ```
 ./img-to-video image.png audio.mp3 out.mp4
 ```
