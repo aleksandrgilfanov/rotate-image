@@ -1,0 +1,46 @@
+#!/bin/sh -e
+
+BGVIDEO="$1"
+IMAGE="$2"
+AUDIO="$3"
+OUTPUT="$4"
+OPACITY="$5"
+FRAMES="$6"
+
+if [ $# -lt 6 ]; then
+	FRAMES="360"
+fi
+
+if [ $# -lt 5 ]; then
+	OPACITY="0.0"
+fi
+
+
+if [ $# -lt 4 ]; then
+    echo "Usage:"
+    echo "$0 {bg-video} {src-image} {src-audio} {out-looped-video} [opacity] [frames]"
+    exit
+fi
+
+# convert background video into images
+TMP_BGDIR=`mktemp -d`
+./video-to-imgdir $BGVIDEO $TMP_BGDIR
+
+# create rotating images on background
+TMP_OUTDIR=`mktemp -d`
+./rotate-image \
+	--bgdir $TMP_BGDIR \
+	--opacity $OPACITY \
+	--frames $FRAMES \
+	$IMAGE \
+	$TMP_OUTDIR
+
+# create video from rotated images
+TMP_VID="$TMP_OUTDIR/tmp.mp4"
+./create-video $TMP_OUTDIR $TMP_VID
+
+# add audio
+./create-looped $TMP_VID $AUDIO $OUTPUT
+
+rm -rf $TMP_BGDIR
+rm -rf $TMP_OUTDIR
