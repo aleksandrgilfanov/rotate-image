@@ -46,11 +46,17 @@ class Worker(Thread):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--bgimg", help="background image")
+parser.add_argument("--frames", help="frames count, default 360")
 parser.add_argument("srcimg", help="source image to rotate")
 parser.add_argument("outdir", help="output directory to save rotated images")
 args = parser.parse_args()
 
 out = args.outdir
+
+if args.frames:
+	frames = int(args.frames)
+else:
+	frames = 360
 
 if not os.path.exists(out):
 	os.mkdir(out)
@@ -63,7 +69,7 @@ for x in range(8):
 	worker.daemon = True
 	worker.start()
 
-for i in range(360):
+for i in range(frames):
 	queue.put(i)
 
 queue.join()
