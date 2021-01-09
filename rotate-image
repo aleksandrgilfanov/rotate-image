@@ -10,15 +10,15 @@ from threading import Thread
 # pip install --user pillow
 from PIL import Image
 
-def save_rotated_image(degree):
+def save_rotated_image(degree, bgimg):
 	src = Image.open(args.srcimg)
 	rotated = src.rotate(-degree)
 
 	name = "{:03d}".format(degree)
 	fullpath = out + "/" + name + ".png"
 
-	if args.bgimg:
-		bg = Image.open(args.bgimg)
+	if bgimg:
+		bg = Image.open(bgimg)
 
 		# get alpha mask from source image
 		# pillow < 4.3.0 does not have getchannel('A'), so
@@ -38,9 +38,9 @@ class Worker(Thread):
 
 	def run(self):
 		while True:
-			degree = self.queue.get()
+			(degree, bgimg) = self.queue.get()
 			try:
-				save_rotated_image(degree)
+				save_rotated_image(degree, bgimg)
 			finally:
 				self.queue.task_done()
 
@@ -58,6 +58,9 @@ if args.frames:
 else:
 	frames = 360
 
+if args.bgimg:
+	bgimg = args.bgimg
+
 if not os.path.exists(out):
 	os.mkdir(out)
 elif not os.path.isdir(out):
@@ -70,6 +73,6 @@ for x in range(8):
 	worker.start()
 
 for i in range(frames):
-	queue.put(i)
+	queue.put((i, bgimg))
 
 queue.join()
