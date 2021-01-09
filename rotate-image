@@ -2,6 +2,7 @@
 
 import argparse
 import errno
+import glob
 import os
 import sys
 from Queue import Queue
@@ -53,7 +54,9 @@ class Worker(Thread):
 				self.queue.task_done()
 
 parser = argparse.ArgumentParser()
+
 parser.add_argument("--opacity", help="opacity of source image (by default is 0.0 = not transparent)")
+parser.add_argument("--bgdir", help="directory that contains background images")
 parser.add_argument("--bgimg", help="background image")
 parser.add_argument("--frames", help="frames count, default 360")
 parser.add_argument("srcimg", help="source image to rotate")
@@ -75,6 +78,17 @@ else:
 if args.bgimg:
 	bgimg = args.bgimg
 
+if args.bgdir:
+	bgimages = sorted(glob.glob(args.bgdir + "/*.png"))
+	# add reversed list of bgimages for ping-pong effect
+	revlist = reversed(bgimages)
+	bgimages.extend(revlist)
+	# store bgframes to loop this list later
+	bgframes = len(bgimages)
+	# for 30 fps 360 frames is 12 sec, so
+	# use 5 repeats = 60 sec video
+	frames = frames * 5
+
 if not os.path.exists(out):
 	os.mkdir(out)
 elif not os.path.isdir(out):
@@ -87,6 +101,8 @@ for x in range(8):
 	worker.start()
 
 for i in range(frames):
+	if args.bgdir:
+		bgimg = bgimages[i % (bgframes)]
 	queue.put((i, bgimg, opacity))
 
 queue.join()
