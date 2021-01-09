@@ -10,7 +10,7 @@ from threading import Thread
 # pip install --user pillow
 from PIL import Image
 
-def save_rotated_image(degree, bgimg):
+def save_rotated_image(degree, bgimg, opacity):
 	src = Image.open(args.srcimg)
 	size = src.size
 	rotated = src.rotate(-degree)
@@ -26,7 +26,13 @@ def save_rotated_image(degree, bgimg):
 		# pillow < 4.3.0 does not have getchannel('A'), so
 		alpha = src.split()[-1]
 
-		composite = Image.composite(rotated, bg, alpha)
+		if opacity:
+			bg_alpha = bg.convert("RGBA")
+			rotated_blend = Image.blend(rotated, bg_alpha, opacity)
+			composite = Image.composite(rotated_blend, bg, alpha)
+		else:
+			composite = Image.composite(rotated, bg, alpha)
+
 		composite.save(fullpath)
 	else:
 		rotated.save(fullpath)
@@ -40,13 +46,14 @@ class Worker(Thread):
 
 	def run(self):
 		while True:
-			(degree, bgimg) = self.queue.get()
+			(degree, bgimg, opacity) = self.queue.get()
 			try:
-				save_rotated_image(degree, bgimg)
+				save_rotated_image(degree, bgimg, opacity)
 			finally:
 				self.queue.task_done()
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--opacity", help="opacity of source image (by default is 0.0 = not transparent)")
 parser.add_argument("--bgimg", help="background image")
 parser.add_argument("--frames", help="frames count, default 360")
 parser.add_argument("srcimg", help="source image to rotate")
@@ -59,6 +66,11 @@ if args.frames:
 	frames = int(args.frames)
 else:
 	frames = 360
+
+if args.opacity:
+	opacity = float(args.opacity)
+else:
+	opacity = 0.0
 
 if args.bgimg:
 	bgimg = args.bgimg
@@ -75,6 +87,6 @@ for x in range(8):
 	worker.start()
 
 for i in range(frames):
-	queue.put((i, bgimg))
+	queue.put((i, bgimg, opacity))
 
 queue.join()
