@@ -12,13 +12,15 @@ from PIL import Image
 
 def save_rotated_image(degree, bgimg):
 	src = Image.open(args.srcimg)
+	size = src.size
 	rotated = src.rotate(-degree)
 
 	name = "{:03d}".format(degree)
 	fullpath = out + "/" + name + ".png"
 
 	if bgimg:
-		bg = Image.open(bgimg)
+		bg_pre = Image.open(bgimg)
+		bg = bg_pre.resize(size)
 
 		# get alpha mask from source image
 		# pillow < 4.3.0 does not have getchannel('A'), so
