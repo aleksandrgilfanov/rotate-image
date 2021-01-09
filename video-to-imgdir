@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+INPUT_VIDEO="$1"
+OUTPUT_DIR="$2"
+
+if [ $# -ne 2 ]
+then
+    echo "Usage:"
+    echo "$0 {input-video} {output-images-directory}"
+    exit
+fi
+
+mkdir -p $OUTPUT_DIR
+ffmpeg -i $INPUT_VIDEO $OUTPUT_DIR/frame-%04d.png
